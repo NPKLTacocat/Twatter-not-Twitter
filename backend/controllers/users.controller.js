@@ -58,11 +58,15 @@ export const followUnfollowUser = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const isFollowing = await req.user.following.includes(id);
+    const isFollowing = currentUser.following.includes(id);
 
     if (!isFollowing) {
-      await User.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
-      await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
+      await User.findByIdAndUpdate(id, {
+        $addToSet: { followers: req.user._id },
+      });
+      await User.findByIdAndUpdate(req.user._id, {
+        $addToSet: { following: id },
+      });
       const newNotification = new Notification({
         from: req.user._id,
         to: userToModify._id,
